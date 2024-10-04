@@ -94,7 +94,7 @@ const displayMovements = function (account, sort = false) {
       <div class="movements__type movements__type--${transactionType}">${
       i + 1
     } ${transactionType}</div>
-      <div class="movements__value">€${mov}</div>
+      <div class="movements__value">€${mov.toFixed(2)}</div>
     </div>`;
     containerMovements.insertAdjacentHTML('afterbegin', html); // afterbegin means all new ones will be on top
   });
@@ -102,7 +102,7 @@ const displayMovements = function (account, sort = false) {
 
 const calcDisplayBalance = function (account) {
   account.balance = account.movements.reduce((acc, curr) => acc + curr, 0);
-  labelBalance.textContent = `€${account.balance}`;
+  labelBalance.textContent = `€${account.balance.toFixed(2)}`;
 };
 
 const calcDisplaySummary = function (account) {
@@ -110,11 +110,11 @@ const calcDisplaySummary = function (account) {
   const withdrawals = movs
     .filter(mov => mov < 0)
     .reduce((acc, mov) => acc + mov, 0);
-  labelSumOut.textContent = `€${Math.abs(withdrawals)}`;
+  labelSumOut.textContent = `€${Math.abs(withdrawals).toFixed(2)}`;
   const deposits = movs
     .filter(mov => mov > 0)
     .reduce((acc, mov) => acc + mov, 0);
-  labelSumIn.textContent = `€${Math.abs(deposits)}`;
+  labelSumIn.textContent = `€${Math.abs(deposits).toFixed(2)}`;
 
   const interest = movs
     .filter(mov => mov > 0)
@@ -198,7 +198,7 @@ btnTransfer.addEventListener('click', function (e) {
 btnLoan.addEventListener('click', function (e) {
   e.preventDefault();
 
-  const loanAmount = +inputLoanAmount.value;
+  const loanAmount = Math.floor(inputLoanAmount.value);
   if (
     loanAmount > 0 &&
     currentAccount.movements.some(mov => mov > loanAmount / 10)
@@ -242,5 +242,101 @@ btnSort.addEventListener('click', e => {
 /////////////////////////////////////////////////
 // LECTURES
 
+// Converting and Checking Numbers
+/*
+
 // Sortcut to convert to Number
 console.log(+'23');
+
+// Parsing
+console.log(Number.parseInt('30px', 10)); // 30
+console.log(Number.parseInt('e23', 10)); // NaN. Needs to start with a number
+
+console.log(Number.parseFloat('23.5px')); // 23.5. parseInt won't show decimal
+
+// Check if value is NaN
+console.log(Number.isNaN(20)); // false
+console.log(Number.isNaN('20')); // false
+console.log(Number.isNaN(+'20X')); // true
+console.log(Number.isNaN(23 / 0)); // false. prints infinity
+
+// Check if value is a number
+console.log(Number.isFinite(20)); // true
+console.log(Number.isFinite('20')); // false
+console.log(Number.isFinite(+'20X')); //false
+console.log(Number.isFinite(23 / 0)); // false
+*/
+
+// A few more methods
+/*
+console.log(Math.sqrt(100));
+
+console.log(Math.max(5, 89, 23, 1, 10)); // won't work with a string in there
+console.log(Math.min(5, 89, 23, 1, 10)); // won't work with a string in there
+
+console.log(Math.PI * Number.parseFloat('10px') ** 2);
+
+console.log(Math.floor(Math.random() * 6 + 1));
+
+const randomInt = (min, max) => Math.floor(Math.random() * (max - min)) + min;
+console.log(randomInt(10, 21));
+*/
+
+//Rounding integers
+/*
+console.log('-----Rounding-----');
+
+console.log(Math.trunc(23.3)); // 23
+console.log(Math.trunc(23.9)); // 23
+console.log(Math.trunc(-23.9)); // -23
+
+console.log(Math.round(23.3)); // 23
+console.log(Math.round(23.9)); // 24
+
+console.log(Math.ceil(23.3)); // 24
+console.log(Math.ceil(23.9)); // 24
+console.log(Math.ceil(-23.9)); // -23
+
+console.log(Math.floor(23.3)); // 23
+console.log(Math.floor(23.9)); // 23
+console.log(Math.floor(-23.9)); // -24
+
+// Rounding decimals
+console.log((2.7).toFixed(0)); // 3 as a string
+console.log((2.7).toFixed(3)); // 2.700 as a string
+*/
+
+// Remainder function
+/*
+
+console.log(5 % 2); // 1
+console.log(8 % 3); // 2
+
+// Check even or odd
+const isEven = num =>
+  num % 2 === 0
+    ? console.log(`${num} is an even number`)
+    : console.log(`${num} is an odd number`);
+isEven(50);
+isEven(54783920);
+isEven(33);
+
+labelBalance.addEventListener('click', () => {
+  [...document.querySelectorAll('.movements__row')].forEach((row, i) => {
+    if (i % 2 === 0) row.style.backgroundColor = 'pink';
+    if (i % 3 === 0) row.style.backgroundColor = 'orange';
+  });
+});
+*/
+
+// Number separators
+const diameter = 287_460_000_000;
+console.log(diameter); // Ignores the _
+
+const priceCents = 345_99;
+console.log(priceCents); // 34599
+
+const transferFee1 = 15_00;
+const transferFee2 = 1_500;
+
+// Can't convert strings with an _ in it
