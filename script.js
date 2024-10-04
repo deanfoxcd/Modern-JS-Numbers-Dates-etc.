@@ -160,9 +160,9 @@ let currentAccount;
 // Event Handlers
 
 // // Fake Always Logged in
-// currentAccount = account1;
-// updateUI(currentAccount);
-// containerApp.style.opacity = 100;
+currentAccount = account1;
+updateUI(currentAccount);
+containerApp.style.opacity = 100;
 
 // Login
 btnLogin.addEventListener('click', e => {
@@ -216,7 +216,8 @@ btnTransfer.addEventListener('click', function (e) {
 
     // Add transfer date
     currentAccount.movementsDates.push(new Date().toISOString());
-    targetAcc.movementsDates.push(new Date());
+    targetAcc.movementsDates.push(new Date().toISOString());
+
     updateUI(currentAccount);
   } else alert('Invalid transfer');
 
@@ -234,10 +235,11 @@ btnLoan.addEventListener('click', function (e) {
     currentAccount.movements.some(mov => mov > loanAmount / 10)
   ) {
     currentAccount.movements.push(loanAmount);
-    updateUI(currentAccount);
 
     // Add loan date
-    currentAccount.movementsDates.push(new Date());
+    currentAccount.movementsDates.push(new Date().toISOString());
+
+    updateUI(currentAccount);
   } else {
     alert('You cannot borrow that much money, sorry');
   }
