@@ -90,10 +90,19 @@ const displayMovements = function (account, sort = false) {
 
   movs.forEach((mov, i) => {
     const transactionType = mov > 0 ? 'deposit' : 'withdrawal';
+
+    const movDate = new Date(account.movementsDates[i]);
+    const day = `${movDate.getDate()}`.padStart(2, 0);
+    const month = `${movDate.getMonth() + 1}`.padStart(2, 0);
+    const year = movDate.getFullYear();
+
+    const displayDate = `${day}/${month}/${year}`;
+
     const html = `<div class="movements__row">
       <div class="movements__type movements__type--${transactionType}">${
       i + 1
     } ${transactionType}</div>
+    <div class="movements__date">${displayDate}</div>
       <div class="movements__value">€${mov.toFixed(2)}</div>
     </div>`;
     containerMovements.insertAdjacentHTML('afterbegin', html); // afterbegin means all new ones will be on top
@@ -146,10 +155,16 @@ const updateUI = function (account) {
   calcDisplaySummary(account);
 };
 
+let currentAccount;
+
 // Event Handlers
 
+// // Fake Always Logged in
+// currentAccount = account1;
+// updateUI(currentAccount);
+// containerApp.style.opacity = 100;
+
 // Login
-let currentAccount;
 btnLogin.addEventListener('click', e => {
   e.preventDefault(); // Prevents form from submitting
 
@@ -162,6 +177,17 @@ btnLogin.addEventListener('click', e => {
       currentAccount.owner.split(' ')[0]
     }`;
     containerApp.style.opacity = 100;
+
+    // Create date and time
+    const now = new Date();
+    const day = `${now.getDate()}`.padStart(2, 0);
+    const month = `${now.getMonth() + 1}`.padStart(2, 0);
+    const year = now.getFullYear();
+    const hour = `${now.getHours()}`.padStart(2, 0);
+    const minutes = `${now.getMinutes()}`.padStart(2, 0);
+    const seconds = `${now.getSeconds()}`.padStart(2, 0);
+
+    labelDate.textContent = `${day}/${month}/${year} ${hour}:${minutes}:${seconds}`;
 
     //Clear input fields and move focus
     inputLoginUsername.value = inputLoginPin.value = '';
@@ -187,6 +213,10 @@ btnTransfer.addEventListener('click', function (e) {
   ) {
     currentAccount.movements.push(-transferAmount);
     targetAcc.movements.push(transferAmount);
+
+    // Add transfer date
+    currentAccount.movementsDates.push(new Date().toISOString());
+    targetAcc.movementsDates.push(new Date());
     updateUI(currentAccount);
   } else alert('Invalid transfer');
 
@@ -205,6 +235,9 @@ btnLoan.addEventListener('click', function (e) {
   ) {
     currentAccount.movements.push(loanAmount);
     updateUI(currentAccount);
+
+    // Add loan date
+    currentAccount.movementsDates.push(new Date());
   } else {
     alert('You cannot borrow that much money, sorry');
   }
@@ -330,6 +363,7 @@ labelBalance.addEventListener('click', () => {
 */
 
 // Number separators
+/*
 const diameter = 287_460_000_000;
 console.log(diameter); // Ignores the _
 
@@ -340,3 +374,33 @@ const transferFee1 = 15_00;
 const transferFee2 = 1_500;
 
 // Can't convert strings with an _ in it
+*/
+
+// Dates
+// Create a date
+/*
+const now = new Date();
+console.log(now);
+console.log(new Date('August 4, 1987'));
+console.log(new Date(account1.movementsDates[0]));
+
+// Months are zero based
+
+console.log(new Date(0)); // The date time began for computers
+// 3 days after in ms:
+console.log(new Date(3 * 24 * 60 * 60 * 1000));
+
+
+// Working with dates
+const future = new Date(2037, 10, 19, 15, 23);
+console.log(future.getFullYear()); // 2037
+console.log(future.getMonth()); // 10 (zero based)
+console.log(future.getDate()); // 19 (getDay is the day of the week)
+// etc.
+console.log(future.toISOString());
+console.log(future.getTime()); // Logs the ms that have passed until this date
+
+console.log(Date.now());
+// date.set also exists for all above
+*/
+console.log(new Date().toISOString());
