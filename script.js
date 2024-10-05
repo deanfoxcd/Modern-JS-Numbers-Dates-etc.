@@ -102,6 +102,13 @@ const formatMovementDate = function (movDate, locale) {
   // }
 };
 
+const formatCur = function (value, locale, currency) {
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: currency,
+  }).format(value);
+};
+
 const displayMovements = function (account, sort = false) {
   containerMovements.innerHTML = ''; // Clear old data
 
@@ -120,7 +127,11 @@ const displayMovements = function (account, sort = false) {
       i + 1
     } ${transactionType}</div>
     <div class="movements__date">${displayDate}</div>
-      <div class="movements__value">€${mov.toFixed(2)}</div>
+      <div class="movements__value">${formatCur(
+        mov,
+        account.locale,
+        account.currency
+      )}</div>
     </div>`;
     containerMovements.insertAdjacentHTML('afterbegin', html); // afterbegin means all new ones will be on top
   });
@@ -128,7 +139,11 @@ const displayMovements = function (account, sort = false) {
 
 const calcDisplayBalance = function (account) {
   account.balance = account.movements.reduce((acc, curr) => acc + curr, 0);
-  labelBalance.textContent = `€${account.balance.toFixed(2)}`;
+  labelBalance.textContent = formatCur(
+    account.balance,
+    account.locale,
+    account.currency
+  );
 };
 
 const calcDisplaySummary = function (account) {
@@ -136,18 +151,30 @@ const calcDisplaySummary = function (account) {
   const withdrawals = movs
     .filter(mov => mov < 0)
     .reduce((acc, mov) => acc + mov, 0);
-  labelSumOut.textContent = `€${Math.abs(withdrawals).toFixed(2)}`;
+  labelSumOut.textContent = formatCur(
+    withdrawals,
+    account.locale,
+    account.currency
+  );
   const deposits = movs
     .filter(mov => mov > 0)
     .reduce((acc, mov) => acc + mov, 0);
-  labelSumIn.textContent = `€${Math.abs(deposits).toFixed(2)}`;
+  labelSumIn.textContent = formatCur(
+    deposits,
+    account.locale,
+    account.currency
+  );
 
   const interest = movs
     .filter(mov => mov > 0)
     .map(mov => (mov * account.interestRate) / 100)
     .filter(int => int > 1) // makes it so that interest is only added if it's greater than €1
     .reduce((acc, mov) => acc + mov, 0);
-  labelSumInterest.textContent = `€${interest.toFixed(2)}`;
+  labelSumInterest.textContent = formatCur(
+    interest,
+    account.locale,
+    account.currency
+  );
 };
 
 const createUsernames = function (accs) {
@@ -172,14 +199,34 @@ const updateUI = function (account) {
   calcDisplaySummary(account);
 };
 
-let currentAccount;
+const startLogoutTimer = function () {
+  const tick = () => {
+    const minutes = Math.floor(time / 60);
+    const seconds = `${time % 60}`.padStart(2, 0);
+    labelTimer.textContent = `${minutes}:${seconds}`;
+    time--;
+    if (time < 0) {
+      clearInterval(timer);
+      labelWelcome.textContent = 'Log in to get started';
+      containerApp.style.opacity = 0;
+    }
+  };
+
+  let time = 5 * 60;
+  tick();
+  const timer = setInterval(tick, 1000);
+  return timer;
+};
 
 // Event Handlers
 
+let currentAccount;
+let timer;
+
 // // Fake Always Logged in
-currentAccount = account1;
-updateUI(currentAccount);
-containerApp.style.opacity = 100;
+// currentAccount = account1;
+// updateUI(currentAccount);
+// containerApp.style.opacity = 100;
 
 // Experimenting API
 /*
@@ -240,6 +287,10 @@ btnLogin.addEventListener('click', e => {
     //Clear input fields and move focus
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginPin.blur();
+
+    if (timer) clearInterval(timer); // Avoids 2 timers running if someone else logs in before timer ends
+
+    timer = startLogoutTimer();
     updateUI(currentAccount);
   }
 });
@@ -267,6 +318,8 @@ btnTransfer.addEventListener('click', function (e) {
     targetAcc.movementsDates.push(new Date().toISOString());
 
     updateUI(currentAccount);
+    clearInterval(timer);
+    timer = startLogoutTimer();
   } else alert('Invalid transfer');
 
   inputTransferTo.value = '';
@@ -282,12 +335,19 @@ btnLoan.addEventListener('click', function (e) {
     loanAmount > 0 &&
     currentAccount.movements.some(mov => mov > loanAmount / 10)
   ) {
-    currentAccount.movements.push(loanAmount);
+    setTimeout(function () {
+      currentAccount.movements.push(loanAmount);
 
-    // Add loan date
-    currentAccount.movementsDates.push(new Date().toISOString());
+      // Add loan date
+      currentAccount.movementsDates.push(new Date().toISOString());
 
-    updateUI(currentAccount);
+      // Update UI
+      updateUI(currentAccount);
+
+      // Rest Timer
+      clearInterval(timer);
+      timer = startLogoutTimer();
+    }, 3000);
   } else {
     alert('You cannot borrow that much money, sorry');
   }
@@ -427,8 +487,8 @@ const transferFee2 = 1_500;
 */
 
 // Dates
-// Create a date
 /*
+// Create a date
 const now = new Date();
 console.log(now);
 console.log(new Date('August 4, 1987'));
@@ -465,4 +525,76 @@ const calcDaysPassed = (date1, date2) =>
 
 const days1 = calcDaysPassed(new Date(2037, 3, 14), new Date(2037, 3, 4));
 console.log(days1);
+*/
+
+// Internationalizing numbers
+/*
+
+const num = 3777281.75;
+
+const options = {
+  style: 'unit',
+  unit: 'mile-per-hour',
+};
+
+console.log('US: ', new Intl.NumberFormat('en-US', options).format(num));
+console.log('Germany: ', new Intl.NumberFormat('de-DE', options).format(num));
+console.log(
+  'US: ',
+  new Intl.NumberFormat(navigator.language, options).format(num)
+);
+*/
+
+// Set timeout
+/*
+
+setTimeout(
+  (ing1, ing2) => {
+    console.log(`Here is your pizza with ${ing1} and ${ing2}`);
+  },
+  2000,
+  'olives',
+  'feta'
+);
+// Any arguments passed after the time can be used in the callback function
+
+// To conditionally clear the timer
+const ingredients = ['spinach', 'chicken'];
+
+const pizzaTimer = setTimeout(
+  (ing1, ing2) => {
+    console.log(`Here is your pizza with ${ing1} and ${ing2}`);
+  },
+  2000,
+  ...ingredients
+);
+if (ingredients.includes('spinach')) clearTimeout(pizzaTimer);
+// Above won't log to console
+*/
+
+// Set Interval
+/*
+
+// My attempt at clock
+setInterval(function () {
+  const now = new Date();
+
+  const hours = `${now.getHours()}`.padStart(2, 0);
+  const minutes = `${now.getMinutes()}`.padStart(2, 0);
+  const seconds = `${now.getSeconds()}`.padStart(2, 0);
+
+  // console.log(`${hours}:${minutes}:${seconds}`);
+  // console.log(now);
+}, 1000);
+
+// A better solution
+// const clock = setInterval(() => {
+//   const now = new Date();
+//   const options = {
+//     hour: 'numeric',
+//     minute: 'numeric',
+//     second: 'numeric',
+//   };
+//   console.log(new Intl.DateTimeFormat(navigator.language, options).format(now));
+// }, 1000);
 */
